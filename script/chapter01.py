@@ -118,3 +118,21 @@ def custom_polynomial(value):
 print(sess.run(custom_polynomial(11)))
 
 # 1.7 活性化関数を実装する
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+sess = tf.Session()
+
+import tensorflow.nn as nn
+
+print(sess.run(tf.nn.relu([-3., 3., 10.])))
+
+print(sess.run(tf.nn.relu6([-3., 3., 10.])))
+
+print(sess.run(tf.nn.sigmoid([-1., 0., 1.])))
+
+print(sess.run(tf.nn.tanh([-1., 0., 1.])))
+
+print(sess.run(tf.nn.softsign([-1., 0., 1.])))
+
+print(sess.run(tf.nn.softplus([-1., 0., 1.])))
