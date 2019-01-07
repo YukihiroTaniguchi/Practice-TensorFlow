@@ -95,3 +95,26 @@ print(sess.run(tf.cholesky(identity_matrix)))
 eigenvalues, eigenvectors = sess.run(tf.self_adjoint_eig(D))
 print(eigenvalues)
 print(eigenvectors)
+
+# 1.6 演算を設定する
+import tensorflow as tf
+sess = tf.Session()
+
+print(sess.run(tf.div(3, 4)))
+
+print(sess.run(tf.truediv(3, 4)))
+
+print(sess.run(tf.floordiv(3, 4)))
+
+print(sess.run(tf.mod(22.0, 5.0)))
+
+print(sess.run(tf.cross([1., 0., 0.], [0., 1., 0.])))
+
+print(sess.run(tf.div(tf.sin(3.1416/4.), tf.cos(3.1416/4.))))
+
+def custom_polynomial(value):
+    return (tf.subtract(3 * tf.square(value), value) + 10)
+
+print(sess.run(custom_polynomial(11)))
+
+# 1.7 活性化関数を実装する
