@@ -163,4 +163,3 @@ birth_data = [[float(x) for x in y.split('\t') if len(x)>=1]
     for y in birth_data[1:] if len(y)>=1]
 
 print(len(birth_data))
-print(len(birth_data[0]))
