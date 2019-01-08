@@ -47,3 +47,41 @@ add1 = tf.add(prod2, a1)
 # 最後に計算グラフを通じてデータを供給する
 for x_val in x_vals:
     print(sess.run(add1, feed_dict={x_data: x_val}))
+
+
+# 2.4 複数の層を操作する
+import numpy as np
+import tensorflow as tf
+import os
+
+sess = tf.Session()
+
+
+# 2D画像の作成
+x_shape = [1, 4, 4, 1]
+x_val = np.random.uniform(size=x_shape)
+
+# プレースホルダーを作成
+x_data = tf.placeholder(tf.float32, shape=x_shape)
+
+# フィルター演算
+my_filter = tf.constant(0.25, shape=[2, 2, 1, 1])
+my_strides = [1, 2, 2, 1]
+mov_avg_layer = tf.nn.conv2d(x_data, my_filter, my_strides,
+                             padding='SAME', name="Moving_Avg_Window")
+
+# 移動平均ウィンドウの2x2出力を操作するカスタム層を定義する
+def custom_layer(input_matrix):
+    input_matrix_sqeezed = tf.squeeze(input_matrix)
+    A = tf.constant([[2., 2.], [-1., 3.]])
+    b = tf.constant(1., shape=[2, 2])
+    temp1 = tf.matmul(A, input_matrix_sqeezed)
+    temp = tf.add(temp1, b)
+    return(tf.sigmoid(temp))
+
+カスタム層を計算グラフに追加
+with tf.name_scope('Custom_Layer') as scope:
+    custom_layer1 = custom_layer(mov_avg_layer)
+
+プレースホルダーに画像を供給
+print(sess.run(custom_layer1, feed_dict={x_data: x_val}))
