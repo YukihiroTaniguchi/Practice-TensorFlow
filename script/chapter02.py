@@ -79,9 +79,9 @@ def custom_layer(input_matrix):
     temp = tf.add(temp1, b)
     return(tf.sigmoid(temp))
 
-カスタム層を計算グラフに追加
+# カスタム層を計算グラフに追加
 with tf.name_scope('Custom_Layer') as scope:
     custom_layer1 = custom_layer(mov_avg_layer)
 
-プレースホルダーに画像を供給
+# プレースホルダーに画像を供給
 print(sess.run(custom_layer1, feed_dict={x_data: x_val}))
