@@ -367,3 +367,135 @@ ridge_loss = tf.reduce_mean(tf.square(A))
 loss = tf.expand_dims(
     tf.add(tf.reduce_mean(tf.square(y_target - model_output)),
            tf.multiply(ridge_param, ridge_loss)), 0)
+
+# ElasticNet 回帰
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from sklearn import datasets
+
+sess = tf.Session()
+
+# Irisデータセットのデータをロード
+iris = datasets.load_iris()
+
+# iris.data = [(がく片の長さ、がく片の幅、花びらの長さ、花びらの幅)]
+x_vals = np.array([[x[1], x[2], x[3]] for x in iris.data])
+y_vals = np.array([y[0] for y in iris.data])
+
+# バッチサイズの設定、プレースホルダの作成、変数とモデルの定義
+batch_size = 50
+learning_rate = 0.001
+
+x_data = tf.placeholder(shape=[None, 3], dtype=tf.float32)
+y_target = tf.placeholder(shape=[None, 1], dtype=tf.float32)
+
+A = tf.Variable(tf.random_normal(shape=[3, 1]))
+b = tf.Variable(tf.random_normal(shape=[1, 1]))
+
+model_output = tf.add(tf.matmul(x_data, A), b)
+
+# L1ノルム、L2ノルムの作成
+elastic_param1 = tf.constant(1.)
+elastic_param2 = tf.constant(1.)
+
+l1_a_loss = tf.reduce_mean(tf.abs(A))
+l2_a_loss = tf.reduce_mean(tf.square(A))
+
+e1_term = tf.multiply(elastic_param1, l1_a_loss)
+e2_term = tf.multiply(elastic_param2, l2_a_loss)
+loss = tf.expand_dims(tf.add(
+    tf.add(tf.reduce_mean(tf.square(y_target - model_output)), \
+            e1_term,), e2_term), 0)
+
+# 変数の初期化
+init = tf.global_variables_initializer()
+sess.run(init)
+
+# 最適化関数を指定
+my_opt = tf.train.GradientDescentOptimizer(learning_rate)
+train_step = my_opt.minimize(loss)
+
+# トレーニングループを開始
+loss_vec = []
+for i in range(1000):
+    rand_index = np.random.choice(len(x_vals), size=batch_size)
+    rand_x = x_vals[rand_index]
+    rand_y = np.transpose([y_vals[rand_index]])
+    sess.run(train_step, feed_dict={x_data: rand_x, y_target: rand_y})
+    temp_loss = sess.run(loss, feed_dict={x_data: rand_x, y_target: rand_y})
+    loss_vec.append(temp_loss[0])
+    if(i+1)%250==0:
+        print('Step #', str(i+1), ' A =', str(sess.run(A)), \
+                                  ' b =', str(sess.run(b)))
+        print('Loss = ', str(temp_loss))
+
+[[sw_coef], [pl_coef], [pw_coef]] = sess.run(A)
+[y_intercept] = sess.run(b)
+
+plt.plot(loss_vec, 'k-')
+plt.title('Loss per Generation')
+plt.xlabel('Generation')
+plt.ylabel('Loss')
+plt.show()
+
+# ロジスティック回帰を実装する
+
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+import requests
+from tensorflow.python.framework import ops
+import os
+import csv
+
+ops.reset_default_graph()
+
+sess = tf.Session()
+
+birth_weight_file = '/Users/yukihiro/Documents/practice/tensorflow/others/birth_weight_file';
+# データをダウンロードし、データファイルを作成
+if not os.path.exists(birth_weight_file):
+    birthdata_url = 'https://github.com/nfmcclure/tensorflow_cookbook/' \
+        'raw/master/01_Introduction/07_Working_with_Data_Sources/' \
+        'birthweight_data/birthweight.dat'
+    birth_file = requests.get(birthdata_url)
+    birth_data = birth_file.text.split('\r\n')
+    birth_header = birth_data[0].split('\t')
+    birth_data = [[float(x) for x in y.split('\t') if len(x)>=1] \
+        for y in birth_data[1:] if len(y)>=1]
+    with open(birth_weight_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(birth_data)
+        f.close()
+
+birth_data = []
+with open(birth_weight_file, newline='') as csvfile:
+    csv_reader = csv.reader(csvfile)
+    birth_header = next(csv_reader)
+    for row in csv_reader:
+        birth_data.append(row)
+
+birth_data = [[float(x) for x in row] for row in birth_data]
+
+y_vals = np.array([x[1] for x in birth_data])
+
+x_vals = np.array([x[2:9] for x in birth_data])
+
+train_indices = np.random.choice(len(x_vals), round(len(x_vals)*0.8),\
+                                 replace=False)
+test_indices = np.array(list(set(range(len(x_vals))) - set(train_indices)))
+
+x_vals_train = x_vals[train_indices]
+x_vals_test = x_vals[test_indices]
+y_vals_train = y_vals[train_indices]
+y_vals_tet = y_vals[test_indices]
+
+# 列で正規化
+def normalize_cols(m):
+    col_max = m.max(axis=0)
+    col_min = m.min(axis=0)
+    return (m - col_min) / (col_max - col_min)
+
+x_vals_train = np.nan_to_num(normalize_cols(x_vals_train))
+x_vals_train = np.nan_to_num(normalize_cols(x_vals_train))
