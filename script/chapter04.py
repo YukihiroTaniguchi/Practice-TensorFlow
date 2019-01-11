@@ -87,3 +87,23 @@ for i in range(500):
     if (i+1)%100==0:
         print(f'Step #{str(i+1)} A = {str(sess.run(A))}, b = {str(sess.run(b))}')
         print('Loss =', str(temp_loss))
+
+    # 係数を抽出
+    [[a1], [a2]] = sess.run(A)
+    [[b]] = sess.run(b)
+    slope = -a2/a1
+    y_intercept = b/a1
+
+    x1_vals = [d[1] for d in x_vals]
+
+    # 最も適合する直線を取得
+    best_fit = []
+    for i in x1_vals:
+        best_fit.append(slope*i+y_intercept)
+
+    # Setosa かどうかで分割
+    setosa_x = [d[1] for i,d in enumerate(x_vals) if y_vals[i] == [1]]
+    setosa_y = [d[0] for i,d in enumerate(x_vals) if y_vals[i] == [1]]
+
+    not_setosa_x = [d[1] for i,d in enumerate(x_vals) if y_vals[i] == -1]
+    not_setosa_x = [d[0] for i,d in enumerate(x_vals) if y_vals[i] == -1]
